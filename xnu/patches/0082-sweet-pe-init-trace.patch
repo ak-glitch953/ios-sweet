@@ -1,9 +1,9 @@
-diff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
+Sdiff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
 --- a/pexpert/arm/pe_init.c
 +++ b/pexpert/arm/pe_init.c
 @@ -249,7 +249,10 @@ PE_init_iokit(void)
  	PE_init_printf(TRUE);
-+	printf("SWEET TRACE 1: printf ready\nSWEET TRACE 1A: before iBoot version\n");
++	printf("SWEET TRACE 1: printf ready | SWEET TRACE 1A: before iBoot version\n");
  
  	printf("iBoot version: %s\n", iBoot_version);
 +	printf("SWEET TRACE 1B: after iBoot version\n");
