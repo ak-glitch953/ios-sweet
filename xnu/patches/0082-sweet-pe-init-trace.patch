@@ -1,0 +1,32 @@
+diff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
+--- a/pexpert/arm/pe_init.c
++++ b/pexpert/arm/pe_init.c
+@@ -249,7 +249,9 @@ PE_init_iokit(void)
+ 	PE_init_printf(TRUE);
++	printf("SWEET TRACE 1: printf ready\n");
+ 
+ 	printf("iBoot version: %s\n", iBoot_version);
+ #if defined(TARGET_OS_OSX) && defined(__arm64__)
+ 	printf("iBoot Stage 2 version: %s\n", iBoot_Stage_2_version);
+ #endif /* defined(TARGET_OS_OSX) && defined(__arm64__) */
++	printf("SWEET TRACE 2: firmware versions printed\n");
+ 
+@@ -273,2 +275,4 @@
++	printf("SWEET TRACE 3: before pe_prepare_images\n");
+ 	pe_prepare_images();
++	printf("SWEET TRACE 4: after pe_prepare_images\n");
+ 
+@@ -321,8 +325,10 @@
++		printf("SWEET TRACE: before vc_progress_initialize\n");
+ 		vc_progress_initialize(&default_progress,
+ 		    default_progress_data1x,
+ 		    default_progress_data2x,
+ 		    default_progress_data3x,
+ 		    (unsigned char *) appleClut8);
+ 		vc_progress_initialized = TRUE;
++		printf("SWEET TRACE: after vc_progress_initialize\n");
+ 	}
+ 
+@@ -329,1 +335,2 @@
++	printf("SWEET TRACE 5: after progress branch\n");
+ 	if (kdebug_enable && kdebug_debugid_enabled(IOKDBG_CODE(DBG_BOOTER, 0))) {
