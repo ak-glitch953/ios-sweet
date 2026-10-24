@@ -85,7 +85,8 @@
 @@ -514,1 +516,3 @@
 +	printf("SWEET BSD TRACE: before kauth_init\n");
  	kauth_init();
-+	printf("SWEET BSD TRACE: after kauth_init\n");@@ -872,14 +874,19 @@
++	printf("SWEET BSD TRACE: after kauth_init\n");
+@@ -872,14 +874,19 @@
  	while (TRUE) {
  		int err;
  
