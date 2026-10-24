@@ -73,7 +73,7 @@
  
  #if DEBUG_BSDINIT
  #define bsd_init_kprintf(x, ...) kprintf("bsd_init: " x, ## __VA_ARGS__)
-@@ -498,7 +498,9 @@
+@@ -498,6 +498,8 @@
  #define bsd_init_kprintf(x, ...)
  #endif
  
@@ -82,7 +82,12 @@
 +	printf("SWEET BSD TRACE: throttle_init returned\n");
  
  	printf(copyright);
- 
+@@ -512,3 +514,5 @@
+ 	/* Initialize kauth subsystem before instancing the first credential */
+ 	bsd_init_kprintf("calling kauth_init\n");
++	printf("SWEET BSD TRACE: before kauth_init\n");
+ 	kauth_init();
++	printf("SWEET BSD TRACE: after kauth_init\n");
 @@ -872,14 +874,19 @@
  	while (TRUE) {
  		int err;
