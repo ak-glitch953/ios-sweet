@@ -73,7 +73,17 @@ jobs:
           # keep going after errors so one run reports every compile failure
           MAKEFLAGS: ${{ inputs.keep_going == 'false' && '' || '-k' }}
         run: bash build.sh
+      - name: Build mockfs root executable
+        run: |
+          mkdir -p out
+          clang -target arm64-apple-ios16.0 -c tools/sweet-init.S -o out/sweet-init.o
+          python3 tools/mkinit.py out/sweet-init.o out/sweet-init.macho
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sweet-init
+          path: out/sweet-init.macho
+          retention-days: 7
       - name: Package build tree for local compiles
         if: always()
         run: |
