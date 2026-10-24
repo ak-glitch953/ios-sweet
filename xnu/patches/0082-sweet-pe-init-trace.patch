@@ -32,3 +32,31 @@ Sdiff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
 @@ -329,1 +335,2 @@
 +	printf("SWEET TRACE 5: after progress branch\n");
  	if (kdebug_enable && kdebug_debugid_enabled(IOKDBG_CODE(DBG_BOOTER, 0))) {
+diff --git a/pexpert/arm/pe_serial.c b/pexpert/arm/pe_serial.c
+--- a/pexpert/arm/pe_serial.c
++++ b/pexpert/arm/pe_serial.c
+@@ -736,8 +736,22 @@
+ static void
+ fbcon_newline(void)
+ {
++	fbcon_col = 0;
++	if (fbcon_rows < 2) {
++		return;
++	}
++
++	/* Clear screen at bottom and restart at top. */
++	if (fbcon_row >= fbcon_rows - 2) {
++		for (uint32_t row = 0; row < fbcon_rows; row++) {
++			fbcon_clear_row(row);
++		}
++		fbcon_row = 0;
++		return;
++	}
++
++	fbcon_row++;
++	fbcon_clear_row(fbcon_row);
++	fbcon_clear_row(fbcon_row + 1);
+-	fbcon_row = (fbcon_row + 1) % fbcon_rows;
+-	fbcon_clear_row(fbcon_row);
+-	fbcon_clear_row((fbcon_row + 1) % fbcon_rows);
+ }
