@@ -82,7 +82,7 @@
 +	printf("SWEET BSD TRACE: throttle_init returned\n");
  
  	printf(copyright);
-@@ -514,1 +516,3 @@
+@@ -512,1 +514,3 @@
 +	printf("SWEET BSD TRACE: before kauth_init\n");
  	kauth_init();
 +	printf("SWEET BSD TRACE: after kauth_init\n");
