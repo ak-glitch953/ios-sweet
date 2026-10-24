@@ -1,0 +1,171 @@
+--- a/osfmk/arm64/sweet_early.c
++++ b/osfmk/arm64/sweet_early.c
+@@ -14,7 +14,7 @@
+ static volatile uint32_t *early_fb = (volatile uint32_t *)(uintptr_t)0x9c000000;
+ #define EARLY_FB early_fb
+ #define EARLY_WIDTH 1080u
+-#define EARLY_HEIGHT 2340u
++#define EARLY_HEIGHT 2400u
+ #define EARLY_STRIDE (4320u / 4)
+ #define EARLY_SCALE 2u
+ #define EARLY_CELL_W (8u * EARLY_SCALE)
+@@ -29,16 +29,24 @@
+ static unsigned int early_started, early_disabled, early_panicking;
+ 
+ static void
+-sweet_early_clear_row(void)
++sweet_early_clear_row(unsigned int row)
+ {
+-	for (unsigned int y = 0; y < EARLY_CELL_H; y++) {
+-		volatile uint32_t *line = EARLY_FB + (early_row * EARLY_CELL_H + y) * EARLY_STRIDE;
++	for (unsigned int y = row * EARLY_CELL_H; y < (row + 1) * EARLY_CELL_H; y++) {
++		volatile uint32_t *line = EARLY_FB + y * EARLY_STRIDE;
+ 		for (unsigned int x = 0; x < EARLY_WIDTH; x++) {
+ 			line[x] = 0xff000000u;
+ 		}
+ 	}
+ }
+ 
++static void
++sweet_early_clear_screen(void)
++{
++	for (unsigned int row = 0; row < EARLY_ROWS; row++) {
++		sweet_early_clear_row(row);
++	}
++}
++
+ void
+ sweet_early_putc(char c)
+ {
+@@ -47,7 +55,7 @@
+ 	}
+ 	if (!early_started) {
+ 		early_started = 1;
+-		sweet_early_clear_row();
++		sweet_early_clear_row(early_row);
+ 	}
+ 	if (c == '\r') {
+ 		early_col = 0;
+@@ -55,8 +63,13 @@
+ 	}
+ 	if (c == '\n' || early_col == EARLY_COLS) {
+ 		early_col = 0;
+-		early_row = (early_row + 1) % EARLY_ROWS;
+-		sweet_early_clear_row();
++		if (early_row + 1 >= EARLY_ROWS) {
++			sweet_early_clear_screen();
++			early_row = 0;
++		} else {
++			early_row++;
++			sweet_early_clear_row(early_row);
++		}
+ 		if (c == '\n') {
+ 			return;
+ 		}
+--- a/bsd/kern/bsd_init.c
++++ b/bsd/kern/bsd_init.c
+@@ -490,7 +490,7 @@
+ 	platform_stall_panic_or_spin(PLATFORM_STALL_XNU_LOCATION_BSD_INIT);
+ #endif
+ 
+-#define DEBUG_BSDINIT 0
++#define DEBUG_BSDINIT 1
+ 
+ #if DEBUG_BSDINIT
+ #define bsd_init_kprintf(x, ...) kprintf("bsd_init: " x, ## __VA_ARGS__)
+@@ -498,7 +498,9 @@
+ #define bsd_init_kprintf(x, ...)
+ #endif
+ 
++	printf("SWEET BSD TRACE: entered bsd_init\n");
+ 	throttle_init();
++	printf("SWEET BSD TRACE: throttle_init returned\n");
+ 
+ 	printf(copyright);
+ 
+@@ -872,14 +874,19 @@
+ 	while (TRUE) {
+ 		int err;
+ 
++		printf("SWEET ROOT TRACE: before setconf\n");
+ 		bsd_init_kprintf("calling setconf\n");
+ 		setconf();
++		printf("SWEET ROOT TRACE: after setconf, device=%s\n", rootdevice);
+ #if CONFIG_NETBOOT
+ 		netboot = (mountroot == netboot_mountroot);
+ #endif
+ 
++		printf("SWEET ROOT TRACE: before vfs_mountroot\n");
+ 		bsd_init_kprintf("vfs_mountroot\n");
+-		if (0 == (err = vfs_mountroot())) {
++		err = vfs_mountroot();
++		printf("SWEET ROOT TRACE: vfs_mountroot returned %d\n", err);
++		if (err == 0) {
+ 			break;
+ 		}
+ 		rootdevice[0] = '\0';
+@@ -903,11 +910,13 @@
+ 
+ 	mountlist.tqh_first->mnt_flag |= MNT_ROOTFS;
+ 
++	printf("SWEET ROOT TRACE: before VFS_ROOT\n");
+ 	bsd_init_kprintf("calling VFS_ROOT\n");
+ 	/* Get the vnode for '/'.  Set fdp->fd_fd.fd_cdir to reference it. */
+ 	if (VFS_ROOT(mountlist.tqh_first, &init_rootvnode, vfs_context_kernel())) {
+ 		panic("bsd_init: cannot find root vnode: %s", PE_boot_args());
+ 	}
++	printf("SWEET ROOT TRACE: VFS_ROOT succeeded\n");
+ 	(void)vnode_ref(init_rootvnode);
+ 	(void)vnode_put(init_rootvnode);
+ 
+@@ -1043,8 +1052,10 @@
+ 	bsd_init_kprintf("calling siginit\n");
+ 	siginit(kernproc);
+ 
++	printf("SWEET BSD TRACE: before bsd_utaskbootstrap\n");
+ 	bsd_init_kprintf("calling bsd_utaskbootstrap\n");
+ 	bsd_utaskbootstrap();
++	printf("SWEET BSD TRACE: bsd_utaskbootstrap returned\n");
+ 
+ 	pal_kernel_announce();
+ 
+@@ -1131,7 +1142,9 @@
+ 	u_int32_t       flags;
+ 	kern_return_t   err;
+ 
++	printf("SWEET ROOT TRACE: before IOFindBSDRoot\n");
+ 	err = IOFindBSDRoot(rootdevice, sizeof(rootdevice), &rootdev, &flags);
++	printf("SWEET ROOT TRACE: IOFindBSDRoot returned %d\n", err);
+ 	if (err) {
+ 		printf("setconf: IOFindBSDRoot returned an error (%d);"
+ 		    "setting rootdevice to 'sd0a'.\n", err);     /* XXX DEBUG TEMP */
+@@ -1139,6 +1152,7 @@
+ 		strlcpy(rootdevice, "sd0a", sizeof(rootdevice));
+ 		flags = 0;
+ 	}
++	printf("SWEET ROOT TRACE: selected device=%s flags=%u\n", rootdevice, flags);
+ 
+ #if CONFIG_NETBOOT
+ 	if (flags & 1) {
+--- a/bsd/kern/kern_exec.c
++++ b/bsd/kern/kern_exec.c
+@@ -6828,7 +6828,10 @@
+ 	 */
+ 	set_security_token(p);
+ 
+-	return execve(p, &init_exec_args, retval);
++	printf("SWEET LAUNCHD TRACE: before execve %s\n", path);
++	error = execve(p, &init_exec_args, retval);
++	printf("SWEET LAUNCHD TRACE: execve returned %d for %s\n", error, path);
++	return error;
+ }
+ 
+ static const char * init_programs[] = {
+@@ -6873,6 +6876,7 @@
+ void
+ load_init_program(proc_t p)
+ {
++	printf("SWEET LAUNCHD TRACE: search started\n");
+ 	uint32_t i;
+ 	int error;
+ 	vm_map_t map = current_map();
