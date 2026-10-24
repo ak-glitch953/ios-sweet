@@ -64,19 +64,7 @@
  		}
 --- a/bsd/kern/bsd_init.c
 +++ b/bsd/kern/bsd_init.c
-@@ -490,7 +490,7 @@
- 	platform_stall_panic_or_spin(PLATFORM_STALL_XNU_LOCATION_BSD_INIT);
- #endif
- 
--#define DEBUG_BSDINIT 0
-+#define DEBUG_BSDINIT 1
- 
- #if DEBUG_BSDINIT
- #define bsd_init_kprintf(x, ...) kprintf("bsd_init: " x, ## __VA_ARGS__)
-@@ -498,6 +498,8 @@
- #define bsd_init_kprintf(x, ...)
- #endif
- 
+@@ -501,3 +501,5 @@
 +	printf("SWEET BSD TRACE: entered bsd_init\n");
  	throttle_init();
 +	printf("SWEET BSD TRACE: throttle_init returned\n");
