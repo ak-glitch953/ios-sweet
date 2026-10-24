@@ -5,7 +5,8 @@ Sdiff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
  	PE_init_printf(TRUE);
 +	printf("SWEET TRACE 1: printf ready | SWEET TRACE 1A: before iBoot version\n");
  
- 	printf("iBoot version: %s\n", iBoot_version);
+-	printf("iBoot version: %s\n", iBoot_version);
++	printf("iBoot version: skipped\n");
 +	printf("SWEET TRACE 1B: after iBoot version\n");
  #if defined(TARGET_OS_OSX) && defined(__arm64__)
  	printf("iBoot Stage 2 version: %s\n", iBoot_Stage_2_version);
