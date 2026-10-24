@@ -82,13 +82,10 @@
 +	printf("SWEET BSD TRACE: throttle_init returned\n");
  
  	printf(copyright);
-@@ -512,3 +514,5 @@
- 	/* Initialize kauth subsystem before instancing the first credential */
- 	bsd_init_kprintf("calling kauth_init\n");
+@@ -514,1 +516,3 @@
 +	printf("SWEET BSD TRACE: before kauth_init\n");
  	kauth_init();
-+	printf("SWEET BSD TRACE: after kauth_init\n");
-@@ -872,14 +874,19 @@
++	printf("SWEET BSD TRACE: after kauth_init\n");@@ -872,14 +874,19 @@
  	while (TRUE) {
  		int err;
  
