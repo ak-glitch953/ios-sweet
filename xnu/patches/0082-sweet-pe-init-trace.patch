@@ -35,11 +35,11 @@ Sdiff --git a/pexpert/arm/pe_init.c b/pexpert/arm/pe_init.c
 diff --git a/pexpert/arm/pe_serial.c b/pexpert/arm/pe_serial.c
 --- a/pexpert/arm/pe_serial.c
 +++ b/pexpert/arm/pe_serial.c
-@@ -736,7 +736,21 @@
+@@ -736,8 +736,21 @@
  static void
  fbcon_newline(void)
  {
-+	fbcon_col = 0;
+ 	fbcon_col = 0;
 +	if (fbcon_rows < 2) {
 +		return;
 +	}
